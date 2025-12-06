@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>SECURE-OS v7.0 MOBILE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-red: #ff003c;
+            --neon-green: #0aff0a;
+            --bg-dark: #050505;
+            --panel-bg: rgba(10, 20, 30, 0.85);
+            --border: 1px solid rgba(0, 243, 255, 0.3);
+        }
+
+        body {
+            margin: 0; background-color: var(--bg-dark);
+            color: var(--neon-cyan); font-family: 'Share Tech Mono', monospace;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* --- RESPONSIVE LAYOUT --- */
+        .main-container {
+            display: flex; flex: 1; padding: 10px; gap: 10px;
+            flex-wrap: wrap; /* Telefonda elementlarni pastga tushiradi */
+        }
+
+        .video-section {
+            flex: 2; min-width: 300px; /* Minimal kenglik */
+            background: #000; border: 2px solid var(--neon-cyan);
+            position: relative; aspect-ratio: 4/3; /* Videoni to'g'ri proporsiyada ushlash */
+        }
+
+        /* MUHIM: Mobile fix */
+        .live-feed {
+            width: 100%; height: 100%;
+            object-fit: contain; /* Videoni kesmasdan sig'diradi */
+        }
+
+        .sidebar {
+            flex: 1; min-width: 300px; /* Telefonda to'liq ekran egallaydi */
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        /* --- BOOT & HEADER --- */
+        #boot-layer { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;}
+        header { padding: 10px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--neon-cyan); display: flex; justify-content: space-between; align-items: center; }
+        .brand { font-family: 'Orbitron'; font-size: 1.2rem; }
+
+        /* --- WIDGETS --- */
+        .hud-card { background: var(--panel-bg); border: var(--border); padding: 10px; backdrop-filter: blur(5px); }
+        .hud-title { font-family: 'Orbitron'; font-size: 0.9rem; color: #fff; border-bottom: 1px solid #333; margin-bottom: 10px; padding-bottom: 5px; }
+
+        .scanlines { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 5; }
+
+        /* UI Elements */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 5px; border: 1px solid #333; }
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+        input:checked + .slider { background-color: var(--neon-green); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        input[type=range] { width: 100%; accent-color: var(--neon-cyan); }
+        .range-group { margin-bottom: 10px; }
+        .range-group label { font-size: 0.7rem; color: #aaa; display: flex; justify-content: space-between;}
+
+        .btn-panic { width: 100%; background: rgba(255,0,0,0.2); border: 1px solid red; color: red; padding: 10px; font-family: 'Orbitron'; cursor: pointer; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="boot-layer">
+        <div style="color:var(--neon-green); font-family:'Orbitron'">LOADING MOBILE INTERFACE...</div>
+        <div style="width:200px; height:2px; background:#333; margin-top:10px;"><div style="width:0%; height:100%; background:var(--neon-green); animation:load 2s forwards;"></div></div>
+        <style>@keyframes load{to{width:100%}}</style>
+    </div>
+
+    <header>
+        <div class="brand"><i class="fas fa-shield-alt"></i> SECURE-OS</div>
+        <div style="font-size:0.8rem; border:1px solid var(--neon-cyan); padding:2px 5px;">MOBILE</div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="video-section">
+            <div class="scanlines"></div>
+            <img src="{{ url_for('video_feed') }}" class="live-feed">
+        </div>
+
+        <div class="sidebar">
+            
+            <div class="hud-card">
+                <div class="hud-title">CONFIGURATION</div>
+
+                <div class="toggle-row" style="border-color: red;">
+                    <span style="color: red; font-weight: bold;"><i class="fas fa-bullhorn"></i> ALARM SIREN</span>
+                    <label class="switch"><input type="checkbox" id="swAlarm" onchange="sendConfig()"><span class="slider"></span></label>
+                </div>
+                
+                <div class="toggle-row" style="border-color:var(--neon-cyan)">
+                    <span style="color:var(--neon-cyan)"><i class="fas fa-brain"></i> AI OBJECT SCAN</span>
+                    <label class="switch"><input type="checkbox" id="swAI" onchange="sendConfig()"><span class="slider"></span></label>
+                </div>
+
+                <div class="range-group" style="margin-top:15px; border: 1px dashed #555; padding: 5px;">
+                    <label>FRAME RATE (FPS): <span id="fps-val" style="color:var(--neon-green)">10</span></label>
+                    <input type="range" id="rngFPS" min="1" max="30" value="10" step="1" onchange="sendConfig()">
+                    <div style="font-size: 0.6rem; color: #666;">Low FPS = Save Internet & RAM</div>
+                </div>
+
+                <div class="range-group">
+                    <label>BRIGHTNESS <span id="br-val">0</span></label>
+                    <input type="range" id="rngBright" min="-100" max="100" value="0" oninput="sendConfig()">
+                </div>
+                
+                <button class="btn-panic" onclick="snapshot()">SNAPSHOT</button>
+            </div>
+
+            <div class="hud-card" style="flex:1;">
+                <div class="hud-title">RECENT LOGS</div>
+                <div id="log-list" style="height: 150px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="hud-card">
+                <div class="range-group">
+                    <label>CPU LOAD <span id="cpu-txt">0%</span></label>
+                    <div style="height:4px; background:#333; width:100%"><div id="cpu-bar" style="height:100%; background:var(--neon-cyan); width:0%"></div></div>
+                </div>
+                <div class="range-group">
+                    <label>RAM USAGE <span id="ram-txt">0%</span></label>
+                    <div style="height:4px; background:#333; width:100%"><div id="ram-bar" style="height:100%; background:orange; width:0%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => document.getElementById('boot-layer').style.display='none', 2000);
+
+        function updateStats() {
+            fetch('/api/data').then(r=>r.json()).then(d => {
+                document.getElementById('cpu-txt').innerText = d.cpu + "%";
+                document.getElementById('cpu-bar').style.width = d.cpu + "%";
+                document.getElementById('ram-txt').innerText = d.ram + "%";
+                document.getElementById('ram-bar').style.width = d.ram + "%";
+
+                if(document.activeElement.tagName !== 'INPUT') {
+                    document.getElementById('swAI').checked = d.ai_active;
+                    document.getElementById('swAlarm').checked = d.alarm_active;
+                    document.getElementById('rngFPS').value = d.fps; // FPS Sync
+                }
+            });
+        }
+        setInterval(updateStats, 2000); // 2 soniyada bir yangilanadi (Internetni tejash)
+
+        function updateLogs() {
+            fetch('/api/logs').then(r=>r.json()).then(files => {
+                let html = "";
+                files.forEach(f => {
+                    let color = f.includes('AI') ? 'red' : '#aaa';
+                    html += `<div style="padding:5px; border-bottom:1px solid #222; font-size:0.7rem;">
+                        <a href="/recordings/${f}" target="_blank" style="color:${color}; text-decoration:none;">${f}</a>
+                    </div>`;
+                });
+                document.getElementById('log-list').innerHTML = html || "No logs";
+            });
+        }
+        updateLogs();
+        setInterval(updateLogs, 5000);
+
+        function sendConfig() {
+            const data = {
+                ai_active: document.getElementById('swAI').checked,
+                alarm_active: document.getElementById('swAlarm').checked, // YANGI
+                fps: document.getElementById('rngFPS').value, // FPS yuborish
+                brightness: document.getElementById('rngBright').value
+            };
+            document.getElementById('fps-val').innerText = data.fps;
+            document.getElementById('br-val').innerText = data.brightness;
+            
+            fetch('/api/update', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+        }
+
+        function snapshot() { fetch('/api/snapshot').then(r=>alert('Saved')); }
+    </script>
+</body>
+</html>
