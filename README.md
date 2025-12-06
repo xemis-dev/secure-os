@@ -39,6 +39,7 @@ Loyiha **YOLOv8** neyron tarmog'idan foydalanib, real vaqt rejimida insonlarni a
 
 ### 2. Loyihani yuklab olish
 ```bash
-git clone [https://github.com/xemis-dev/secure-os.git](https://github.com/xemis-dev/secure-os.git)
+git clone https://github.com/xemis-dev/secure-os.git
 cd secure-os
+
 
